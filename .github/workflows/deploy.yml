@@ -39,7 +39,9 @@ jobs:
 
       - name: Sync deps (uv)
         run: |
-          sudo -u dzbot bash -lc 'cd /opt/dz-highrise-djbot-py && /opt/dzbot/.local/bin/uv sync --frozen || /opt/dzbot/.local/bin/uv sync'
+          sudo -u dzbot bash -lc 'cd /opt/dz-highrise-djbot-py && rm -rf /opt/dz-highrise-djbot-py/.venv
+          /opt/dzbot/.local/bin/uv sync --frozen || rm -rf /opt/dz-highrise-djbot-py/.venv
+          /opt/dzbot/.local/bin/uv sync'
 
       - name: Start services
         run: |
