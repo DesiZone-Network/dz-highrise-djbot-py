@@ -1,0 +1,39 @@
+settings:
+  prefix: "?"
+  developers: ["FaF86"]
+  moderators: ["FaF86", "umerrrr", "hizz_", "Chotibachi_", "ibbygamer2008", "afiiiii", "_chotibachi_"]
+  action: "walk"
+  emote: "idle-dance-casual"
+  coordinates: {x: 17, y: 0, z: 10.5, facing: "FrontLeft"}
+  object: {entity_id: "648f0fe90000000000000c82", anchor_ix: 0}
+periodic:
+  type: "multiple"
+  is_enabled: true
+  duration_minutes: 5
+  messages:
+    - "Request your favorite songs now on DesiZoneRadio.com"
+    - "Want to request songs on DesiZone Radio? \nJust use the command ?search <songname> to find your favorite songs"
+authentication:
+  room: "66146f7c7d15905c4161bb27"
+  token_env: "HIGHRISE_TOKEN_TEST"
+  bot_id: "660e562d55cf728f6e9506aa"
+radio:
+  radio_id: 1
+  radio_name: "DesiZone Radio"
+  radio_name_short: "DesiZone Radio"
+  dj_name: "DJ_DZ"
+outfits:
+  legacy_module: "../config/outfits.js"
+excluded_user_ids:
+  - "660e562d55cf728f6e9506aa"
+  - "660d6c1f7a7d0f5af43ff89f"
+  - "66292a39edb0d04a12e2f026"
+floor_maps:
+  "66146f7c7d15905c4161bb27":
+    floor 1: {x: 12, y: 0, z: 9, facing: "FrontRight"}
+    floor 2: {x: 16.5, y: 6.25, z: 9, facing: "FrontRight"}
+    floor 3: {x: 17, y: 13.25, z: 3, facing: "FrontRight"}
+    floor 4: {x: 16.5, y: 20, z: 4, facing: "FrontRight"}
+teleport_triggers:
+  - match: {x: 16.5, y: 6.25, z: 19.5}
+    destination: {x: 1, y: 6.25, z: 3.5, facing: "FrontRight"}

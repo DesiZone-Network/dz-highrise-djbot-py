@@ -1,0 +1,30 @@
+[project]
+name = "dz-highrise-bot"
+version = "0.1.0"
+description = "Python migration of the DesiZone Highrise DJ bot."
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "firebase-admin>=6.5.0",
+  "highrise-bot-sdk==25.1.0",
+  "httpx>=0.27.0",
+  "python-dotenv>=1.0.1",
+  "pyyaml>=6.0.1",
+  "sentry-sdk>=2.20.0",
+  "setuptools>=75.0.0,<81.0.0",
+]
+
+[project.scripts]
+dz-highrise-bot = "dz_highrise_bot.__main__:cli"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.0",
+  "pytest-asyncio>=0.24.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.uv]
+package = true
