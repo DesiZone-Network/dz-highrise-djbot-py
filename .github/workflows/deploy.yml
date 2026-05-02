@@ -5,9 +5,14 @@ on:
     branches: [ main ]
   workflow_dispatch: {}
 
+concurrency:
+  group: deploy-db02
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: [self-hosted, arm64, oci, db02, python]
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,7 +24,6 @@ jobs:
       - name: Deploy files to /opt/dz-highrise-djbot-py (preserve .env)
         run: |
           sudo mkdir -p /opt/dz-highrise-djbot-py
-          # preserve existing .env
           if [ -f /opt/dz-highrise-djbot-py/.env ]; then
             sudo cp /opt/dz-highrise-djbot-py/.env /tmp/dz-highrise-djbot-py.env
           fi
@@ -41,8 +45,12 @@ jobs:
         run: |
           sudo systemctl daemon-reload
           sudo systemctl start dz-highrise-djbot-py@config.service dz-highrise-djbot-py@config2.service
-          sudo systemctl --no-pager --full status dz-highrise-djbot-py@config.service | head -n 20
-          sudo systemctl --no-pager --full status dz-highrise-djbot-py@config2.service | head -n 20
+
+      - name: Verify status
+        run: |
+          sudo systemctl --no-pager --full status dz-highrise-djbot-py@config.service | head -n 25
+          echo '---'
+          sudo systemctl --no-pager --full status dz-highrise-djbot-py@config2.service | head -n 25
 
       - name: Discord Notification
         if: always()
