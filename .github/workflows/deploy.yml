@@ -1,4 +1,5 @@
-name: deploy
+name: Deploy to or-dz-prd-db-02
+
 on:
   push:
     branches: [ main ]
@@ -8,25 +9,54 @@ jobs:
   deploy:
     runs-on: [self-hosted, arm64, oci, db02, python]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install uv
+      - name: Stop services
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install uv
+          sudo systemctl stop dz-highrise-djbot-py@config.service dz-highrise-djbot-py@config2.service || true
 
-      - name: Deploy code
+      - name: Deploy files to /opt/dz-highrise-djbot-py (preserve .env)
         run: |
           sudo mkdir -p /opt/dz-highrise-djbot-py
-          sudo rsync -a --delete --exclude '.git' --exclude '.github' ./ /opt/dz-highrise-djbot-py/
+          # preserve existing .env
+          if [ -f /opt/dz-highrise-djbot-py/.env ]; then
+            sudo cp /opt/dz-highrise-djbot-py/.env /tmp/dz-highrise-djbot-py.env
+          fi
+          sudo rsync -a --delete \
+            --exclude '.git' --exclude '.github' --exclude '.env' \
+            --exclude '__pycache__' --exclude '.pytest_cache' \
+            ./ /opt/dz-highrise-djbot-py/
+          if [ -f /tmp/dz-highrise-djbot-py.env ]; then
+            sudo mv /tmp/dz-highrise-djbot-py.env /opt/dz-highrise-djbot-py/.env
+          fi
           sudo chown -R dzbot:dzbot /opt/dz-highrise-djbot-py
+          sudo chmod 600 /opt/dz-highrise-djbot-py/.env || true
 
-      - name: Sync deps (venv)
+      - name: Sync deps (uv)
         run: |
-          sudo -u dzbot bash -lc 'cd /opt/dz-highrise-djbot-py && uv sync --frozen || uv sync'
+          sudo -u dzbot bash -lc 'cd /opt/dz-highrise-djbot-py && /opt/dzbot/.local/bin/uv sync --frozen || /opt/dzbot/.local/bin/uv sync'
 
-      - name: Restart service
+      - name: Start services
         run: |
           sudo systemctl daemon-reload
-          sudo systemctl restart dz-highrise-djbot-py.service
-          sudo systemctl --no-pager --full status dz-highrise-djbot-py.service
+          sudo systemctl start dz-highrise-djbot-py@config.service dz-highrise-djbot-py@config2.service
+          sudo systemctl --no-pager --full status dz-highrise-djbot-py@config.service | head -n 20
+          sudo systemctl --no-pager --full status dz-highrise-djbot-py@config2.service | head -n 20
+
+      - name: Discord Notification
+        if: always()
+        uses: sarisia/actions-status-discord@v1.15.2
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_PRIVATE }}
+          status: ${{ job.status }}
+          title: "🛠️ Deploy: dz-highrise-djbot-py"
+          description: |
+            **Status:** ${{ job.status }}
+            **Repo:** ${{ github.repository }}
+            **Commit:** ${{ github.sha }}
+          color: 0x26b5ce
+          noprefix: true
+          nocontext: true
+          nodetail: true
+          notimestamp: true
