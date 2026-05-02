@@ -15,7 +15,7 @@ periodic:
     - "Want to request songs on Desi Hits 2000s? \nJust use the command !search <songname> to find your favorite songs"
 authentication:
   room: "661f8dac913674fc6fef2233"
-  token_env: "HIGHRISE_TOKEN"
+  token_env: "HIGHRISE_TOKEN_2"
   bot_id: "66215004159b3cdff6025246"
 radio:
   radio_id: 2
