@@ -10,19 +10,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Ensure deps
+      - name: Install uv
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install uv
 
-      - name: Sync deps
-        run: |
-          uv sync --frozen || uv sync
-
-      - name: Deploy to /opt/dz-highrise-djbot-py
+      - name: Deploy code
         run: |
           sudo mkdir -p /opt/dz-highrise-djbot-py
           sudo rsync -a --delete --exclude '.git' --exclude '.github' ./ /opt/dz-highrise-djbot-py/
+          sudo chown -R dzbot:dzbot /opt/dz-highrise-djbot-py
+
+      - name: Sync deps (venv)
+        run: |
+          sudo -u dzbot bash -lc 'cd /opt/dz-highrise-djbot-py && uv sync --frozen || uv sync'
 
       - name: Restart service
         run: |
