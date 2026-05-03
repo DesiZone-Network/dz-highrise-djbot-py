@@ -21,21 +21,29 @@ jobs:
         run: |
           sudo systemctl stop dz-highrise-djbot-py@config.service dz-highrise-djbot-py@config2.service || true
 
-      - name: Deploy files to /opt/dz-highrise-djbot-py (preserve .env)
+      - name: Deploy files to /opt/dz-highrise-djbot-py (preserve .env + firebaseapi.json)
         run: |
           sudo mkdir -p /opt/dz-highrise-djbot-py
+          # Backup .env and firebaseapi.json before rsync --delete
           if [ -f /opt/dz-highrise-djbot-py/.env ]; then
             sudo cp /opt/dz-highrise-djbot-py/.env /tmp/dz-highrise-djbot-py.env
           fi
+          if [ -f /opt/dz-highrise-djbot-py/firebaseapi.json ]; then
+            sudo cp /opt/dz-highrise-djbot-py/firebaseapi.json /tmp/dz-highrise-djbot-py.firebaseapi.json
+          fi
           sudo rsync -a --delete \
-            --exclude '.git' --exclude '.github' --exclude '.env' \
+            --exclude '.git' --exclude '.github' --exclude '.env' --exclude 'firebaseapi.json' \
             --exclude '__pycache__' --exclude '.pytest_cache' \
             ./ /opt/dz-highrise-djbot-py/
+          # Restore .env and firebaseapi.json
           if [ -f /tmp/dz-highrise-djbot-py.env ]; then
             sudo mv /tmp/dz-highrise-djbot-py.env /opt/dz-highrise-djbot-py/.env
           fi
+          if [ -f /tmp/dz-highrise-djbot-py.firebaseapi.json ]; then
+            sudo mv /tmp/dz-highrise-djbot-py.firebaseapi.json /opt/dz-highrise-djbot-py/firebaseapi.json
+          fi
           sudo chown -R dzbot:dzbot /opt/dz-highrise-djbot-py
-          sudo chmod 600 /opt/dz-highrise-djbot-py/.env || true
+          sudo chmod 600 /opt/dz-highrise-djbot-py/.env /opt/dz-highrise-djbot-py/firebaseapi.json 2>/dev/null || true
 
       - name: Sync deps (uv)
         run: |
